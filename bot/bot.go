@@ -1,10 +1,15 @@
 package bot
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
+	"github.com/BaboaAtCity/BigNewsMorgan/alerts"
 	"github.com/BaboaAtCity/BigNewsMorgan/coingecko"
 	"github.com/BaboaAtCity/BigNewsMorgan/watchlist"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -51,6 +56,8 @@ func (b *Bot) Start() {
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, b.handleAdd(update.Message.CommandArguments()))
 			case "remove":
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, b.handleRemove(update.Message.CommandArguments()))
+			case "addalert":
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID, b.handleAddAlert(update.Message.CommandArguments()))
 			default:
 				msg = tgbotapi.NewMessage(update.Message.Chat.ID, "I don't know that command")
 			}
@@ -67,6 +74,8 @@ func (b *Bot) Start() {
 				msg = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Please send the ticker or coin name to add. Format: /add <ticker/name>")
 			case "remove":
 				msg = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Please send the ticker or coin name to remove. Format: /remove <ticker/name>")
+			case "addalert":
+				msg = tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Please send the alert details. Format: /addalert <coin> <price>")
 			}
 		}
 
@@ -99,4 +108,24 @@ func (b *Bot) handleRemove(args string) string {
 		return "Please provide a ticker or coin name to remove. Usage: /remove <ticker/name>"
 	}
 	return watchlist.Remove(args)
+}
+
+func (b *Bot) handleAddAlert(args string) string {
+	parts := strings.Fields(args)
+	if len(parts) != 2 {
+		return "Usage: /addalert <coin> <price>"
+	}
+
+	coin := strings.ToUpper(parts[0])
+	price, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return "Invalid price. Please enter a valid number."
+	}
+
+	err = alerts.AddAlert(coin, price)
+	if err != nil {
+		return fmt.Sprintf("Error adding alert: %v", err)
+	}
+
+	return fmt.Sprintf("Alert added for %s at price $%.2f", coin, price)
 }

@@ -1,0 +1,19 @@
+{
+  "alerts": [
+    {
+      "coin": "BTC",
+      "price": 50000,
+      "created_at": "2024-07-27T15:04:05Z"
+    },
+    {
+      "coin": "ETH",
+      "price": 2000,
+      "created_at": "2024-07-27T16:30:00Z"
+    },
+    {
+      "coin": "bitcoin",
+      "price": 67000,
+      "created_at": "2024-07-27T21:17:29.366171+01:00"
+    }
+  ]
+}
